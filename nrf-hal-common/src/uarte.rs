@@ -16,7 +16,13 @@ use embedded_hal::serial;
 use crate::pac::UARTE1;
 
 #[cfg(feature = "9160")]
-use crate::pac::{uarte0_ns as uarte0, UARTE0_NS as UARTE0, UARTE1_NS as UARTE1};
+use crate::pac::{
+    uarte0_ns as uarte0,
+    UARTE0_NS as UARTE0,
+    UARTE1_NS as UARTE1,
+    UARTE2_NS as UARTE2,
+    UARTE3_NS as UARTE3,
+};
 
 #[cfg(any(feature = "5340-app", feature = "5340-net"))]
 use crate::pac::{uarte0_ns as uarte0, UARTE0_NS as UARTE0};
@@ -47,8 +53,8 @@ pub use uarte0::{baudrate::BAUDRATE_A as Baudrate, config::PARITY_A as Parity};
 pub struct Uarte<T>(T);
 
 impl<T> Uarte<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     pub fn new(uarte: T, mut pins: Pins, parity: Parity, baudrate: Baudrate) -> Self {
         // Is the UART already on? It might be if you had a bootloader
@@ -242,8 +248,8 @@ where
         timer: &mut Timer<I>,
         cycles: u32,
     ) -> Result<(), Error>
-    where
-        I: timer::Instance,
+        where
+            I: timer::Instance,
     {
         // Start the read.
         start_read(&self.0, rx_buffer)?;
@@ -413,8 +419,8 @@ fn start_read(uarte: &uarte0::RegisterBlock, rx_buffer: &mut [u8]) -> Result<(),
 
     // Start UARTE Receive transaction.
     uarte.tasks_startrx.write(|w|
-            // `1` is a valid value to write to task registers.
-            unsafe { w.bits(1) });
+        // `1` is a valid value to write to task registers.
+        unsafe { w.bits(1) });
 
     Ok(())
 }
@@ -451,8 +457,8 @@ fn finalize_read(uarte: &uarte0::RegisterBlock) {
 }
 
 impl<T> fmt::Write for Uarte<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         // Copy all data into an on-stack buffer so we never try to EasyDMA from
@@ -486,7 +492,7 @@ pub enum Error {
     BufferNotInRAM,
 }
 
-pub trait Instance: Deref<Target = uarte0::RegisterBlock> + sealed::Sealed {
+pub trait Instance: Deref<Target=uarte0::RegisterBlock> + sealed::Sealed {
     fn ptr() -> *const uarte0::RegisterBlock;
 }
 
@@ -502,10 +508,10 @@ impl Instance for UARTE0 {
 }
 
 #[cfg(any(
-    feature = "52833",
-    feature = "52840",
-    feature = "9160",
-    feature = "5340-app"
+feature = "52833",
+feature = "52840",
+feature = "9160",
+feature = "5340-app"
 ))]
 mod _uarte1 {
     use super::*;
@@ -517,11 +523,35 @@ mod _uarte1 {
     }
 }
 
+#[cfg(feature = "9160")]
+mod _uarte2 {
+    use super::*;
+    impl sealed::Sealed for UARTE2 {}
+    impl Instance for UARTE2 {
+        fn ptr() -> *const uarte0::RegisterBlock {
+            UARTE2::ptr()
+        }
+    }
+}
+
+#[cfg(feature = "9160")]
+mod _uarte3 {
+    use super::*;
+    impl sealed::Sealed for UARTE3 {}
+    impl Instance for UARTE3 {
+        fn ptr() -> *const uarte0::RegisterBlock {
+            UARTE3::ptr()
+        }
+    }
+}
+
 #[cfg(any(feature = "5340-app"))]
 mod _uarte0_s {
     use super::*;
     use crate::pac::UARTE0_S;
+
     impl sealed::Sealed for UARTE0_S {}
+
     impl Instance for UARTE0_S {
         fn ptr() -> *const uarte0::RegisterBlock {
             UARTE0_S::ptr()
@@ -531,8 +561,8 @@ mod _uarte0_s {
 
 /// Interface for the TX part of a UART instance that can be used independently of the RX part.
 pub struct UarteTx<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     _marker: core::marker::PhantomData<T>,
     tx_buf: &'static mut [u8],
@@ -541,16 +571,16 @@ where
 
 /// Interface for the RX part of a UART instance that can be used independently of the TX part.
 pub struct UarteRx<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     _marker: core::marker::PhantomData<T>,
     rx_buf: &'static mut [u8],
 }
 
 impl<T> UarteTx<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     fn new(tx_buf: &'static mut [u8]) -> Result<UarteTx<T>, Error> {
         if tx_buf.len() == 0 {
@@ -570,8 +600,8 @@ where
 }
 
 impl<T> UarteRx<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     fn new(rx_buf: &'static mut [u8]) -> Result<UarteRx<T>, Error> {
         if rx_buf.len() == 0 {
@@ -590,8 +620,8 @@ where
 }
 
 impl<T> Drop for UarteTx<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     fn drop(&mut self) {
         let uarte = unsafe { &*T::ptr() };
@@ -613,8 +643,8 @@ where
 }
 
 impl<T> Drop for UarteRx<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     fn drop(&mut self) {
         let uarte = unsafe { &*T::ptr() };
@@ -635,8 +665,8 @@ where
 }
 
 impl<T> serial::Write<u8> for UarteTx<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     type Error = Error;
 
@@ -709,8 +739,8 @@ where
 impl<T> bserial::write::Default<u8> for UarteTx<T> where T: Instance {}
 
 impl<T> core::fmt::Write for UarteTx<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         s.as_bytes()
@@ -721,8 +751,8 @@ where
 }
 
 impl<T> serial::Read<u8> for UarteRx<T>
-where
-    T: Instance,
+    where
+        T: Instance,
 {
     type Error = Error;
     fn read(&mut self) -> nb::Result<u8, Self::Error> {
