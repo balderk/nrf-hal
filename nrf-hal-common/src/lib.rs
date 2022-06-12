@@ -143,7 +143,7 @@ pub mod target_constants {
     #[cfg(any(feature = "5340-app", feature = "5340-net"))]
     pub const EASY_DMA_SIZE: usize = (1 << 16) - 1;
     #[cfg(feature = "9160")]
-    pub const EASY_DMA_SIZE: usize = (1 << 12) - 1;
+    pub const EASY_DMA_SIZE: usize = (1 << 13) - 1;
 
     // Limits for Easy DMA - it can only read from data ram
     pub const SRAM_LOWER: usize = 0x2000_0000;
