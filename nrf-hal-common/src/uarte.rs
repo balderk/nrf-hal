@@ -749,8 +749,8 @@ where
 }
 
 impl<T> serial::Read<u8> for UarteRx<T>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     type Error = Error;
     fn read(&mut self) -> nb::Result<u8, Self::Error> {
