@@ -47,7 +47,6 @@ use crate::pac::timer0::{
 use core::marker::PhantomData;
 
 pub struct OneShot;
-
 pub struct Periodic;
 
 /// Interface to a TIMER instance.
@@ -60,8 +59,8 @@ pub struct Periodic;
 pub struct Timer<T, U = OneShot>(T, PhantomData<U>);
 
 impl<T> Timer<T, OneShot>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     pub fn one_shot(timer: T) -> Timer<T, OneShot> {
         timer.set_oneshot();
@@ -75,8 +74,8 @@ impl<T> Timer<T, OneShot>
 }
 
 impl<T> Timer<T, Periodic>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     pub fn periodic(timer: T) -> Timer<T, Periodic> {
         timer.set_periodic();
@@ -86,8 +85,8 @@ impl<T> Timer<T, Periodic>
 }
 
 impl<T, U> Timer<T, U>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     pub const TICKS_PER_SECOND: u32 = 1_000_000;
 
@@ -242,8 +241,8 @@ impl<T, U> Timer<T, U>
 }
 
 impl<T, U> timer::CountDown for Timer<T, U>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     type Time = u32;
 
@@ -252,8 +251,8 @@ impl<T, U> timer::CountDown for Timer<T, U>
     /// The timer will run for the given number of cycles, then it will stop and
     /// reset.
     fn start<Time>(&mut self, cycles: Time)
-        where
-            Time: Into<Self::Time>,
+    where
+        Time: Into<Self::Time>,
     {
         self.0.timer_start(cycles);
     }
@@ -280,8 +279,8 @@ impl<T, U> timer::CountDown for Timer<T, U>
 }
 
 impl<T, U> timer::Cancel for Timer<T, U>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     type Error = ();
 
@@ -294,8 +293,8 @@ impl<T, U> timer::Cancel for Timer<T, U>
 impl<T> timer::Periodic for Timer<T, Periodic> where T: Instance {}
 
 impl<T, U> DelayMs<u32> for Timer<T, U>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     fn delay_ms(&mut self, ms: u32) {
         self.delay_us(ms * 1_000);
@@ -303,8 +302,8 @@ impl<T, U> DelayMs<u32> for Timer<T, U>
 }
 
 impl<T, U> DelayMs<u16> for Timer<T, U>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     fn delay_ms(&mut self, ms: u16) {
         self.delay_ms(u32(ms));
@@ -312,8 +311,8 @@ impl<T, U> DelayMs<u16> for Timer<T, U>
 }
 
 impl<T, U> DelayMs<u8> for Timer<T, U>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     fn delay_ms(&mut self, ms: u8) {
         self.delay_ms(u32(ms));
@@ -321,8 +320,8 @@ impl<T, U> DelayMs<u8> for Timer<T, U>
 }
 
 impl<T, U> DelayUs<u32> for Timer<T, U>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     fn delay_us(&mut self, us: u32) {
         self.delay(us);
@@ -330,8 +329,8 @@ impl<T, U> DelayUs<u32> for Timer<T, U>
 }
 
 impl<T, U> DelayUs<u16> for Timer<T, U>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     fn delay_us(&mut self, us: u16) {
         self.delay_us(u32(us))
@@ -339,8 +338,8 @@ impl<T, U> DelayUs<u16> for Timer<T, U>
 }
 
 impl<T, U> DelayUs<u8> for Timer<T, U>
-    where
-        T: Instance,
+where
+    T: Instance,
 {
     fn delay_us(&mut self, us: u8) {
         self.delay_us(u32(us))
@@ -355,8 +354,8 @@ pub trait Instance: sealed::Sealed {
     fn as_timer0(&self) -> &RegBlock0;
 
     fn timer_start<Time>(&self, cycles: Time)
-        where
-            Time: Into<u32>,
+    where
+        Time: Into<u32>,
     {
         // If the following sequence of events occurs, the COMPARE event will be
         // set here:
@@ -569,11 +568,8 @@ impl ExtendedCCTimer for Timer<TIMER4> {
 
 mod sealed {
     pub trait Sealed {}
-
     impl Sealed for super::TIMER0 {}
-
     impl Sealed for super::TIMER1 {}
-
     impl Sealed for super::TIMER2 {}
 
     #[cfg(any(feature = "52832", feature = "52833", feature = "52840"))]
